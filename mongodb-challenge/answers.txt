@@ -1,0 +1,46 @@
+CONSULTAS EJERCICIOS
+
+1. Mostrar todas las películas.
+
+db.peliculas.find()
+
+2. Mostrar las películas del año 1997.
+
+db.peliculas.find({ anio: 1997 }).pretty()
+
+3. Mostrar las películas con calificación mayor a 8.
+
+db.peliculas.find({ calificacion: { $gt: 8 } }).pretty()
+
+4. Mostrar solo el título y año de cada película.
+
+db.peliculas.find(
+   {}, 
+   { titulo: 1, anio: 1, _id: 0 }).pretty()
+
+5. Mostrar películas que estén disponibles (disponible: true).
+
+db.peliculas.find({ disponible: true }).pretty()
+
+6. Agrega una película nueva: "Inception", 2010, Ciencia Ficción, 8.8, Christopher Nolan, disponible.
+
+db.peliculas.insertOne({
+  "titulo": "Inception",
+  "anio": 2010,
+  "genero": "Ciencia Ficción",
+  "calificacion": 8.8,
+  "director": "Christopher Nolan",
+  "disponible": true})
+
+7. Actualizar la calificación de "Titanic" a 8.0.
+db.peliculas.updateOne(
+  { titulo: "Titanic" },  
+  { $set: { calificacion: 8.0 } })
+
+8. Consulta todas las películas dirigidas por Christopher Nolan.
+
+db.peliculas.find({ director: "Christopher Nolan" }).pretty()
+
+9. Muestra todas las películas ordenadas por año descendente.
+
+db.peliculas.find().sort({ anio: -1 }).pretty()
