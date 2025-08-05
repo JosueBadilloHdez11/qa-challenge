@@ -6,3 +6,80 @@ Contraseña: Test1234!
 
 Requisitos: Usar Cypress o Playwright (u otra herramienta que elijas)
 
+RESPUESTAS DE CONSULTAS
+
+1. Obtenga los nombres de todas las aplicaciones que se han usado desde televisores (device_type = 'TV').
+
+SELECT DISTINCT s.nombre_de_la_aplicación
+FROM Sesiones s, Dispositivos d
+WHERE s.id_del_dispositivo = d.id_del_dispositivo
+AND d.tipo_de_dispositivo = 'TELEVISOR'
+
+2. Calcula el número total de sesiones y el tiempo total de visualización por aplicación. Nota: duración = hora_final - hora_inicio
+
+SELECT nombre_de_la_aplicación, COUNT(*),
+SEC_TO_TIME(SUM(TIMESTAMPDIFF(SECOND, hora_inicio, hora_final)))
+FROM Sesiones
+GROUP BY nombre_de_la_aplicación;
+
+3. Mostrar los 5 hogares con más tiempo total de uso de aplicaciones, sumando la duración de todas las sesiones.
+
+SELECT h.región AS region,
+SUM(TIMESTAMPDIFF(MINUTE, s.hora_inicio, s.hora_final)) AS minutos_totales
+FROM Hogares h, Dispositivos d, Sesiones s
+WHERE h.`ID del hogar` = d.`ID del hogar`
+AND d.id_del_dispositivo = s.id_del_dispositivo
+GROUP BY h.`ID del hogar`, h.región
+ORDER BY minutos_totales DESC
+LIMIT 5;
+
+4. Para cada región, obtenga el número de hogares y el promedio de dispositivos por hogar.
+
+SELECT h.región AS region,
+COUNT(DISTINCT h.`ID del hogar`) AS total_hogar,
+(SELECT COUNT(*) FROM Dispositivos d WHERE d.`ID del hogar` = h.`ID del hogar`) AS promedio_dispositivo
+FROM Hogares h, Dispositivos d
+WHERE h.`ID del hogar` = d.`ID del hogar`
+GROUP BY h.región;
+
+5. Obtenga las sesiones iniciadas en el mes de junio de 2025, indicando la aplicación, el dispositivo y la duración.
+
+SELECT s.nombre_de_la_aplicación, d.tipo_de_dispositivo,
+TIMESTAMPDIFF(MINUTE, s.hora_inicio, s.hora_final) AS duracion_minutos
+FROM Sesiones s, Dispositivos d
+WHERE s.id_del_dispositivo = d.id_del_dispositivo 
+AND (s.hora_inicio LIKE '%/06/2025%' 
+OR s.hora_inicio LIKE '2025-06-%')
+ORDER BY s.hora_inicio;
+
+6. Cree una vista daily_usage_per_household que contenga: hogar_id use_date (por día) total_minutos_watched
+
+CREATE VIEW daily_usage_per_household AS
+SELECT h.`ID del hogar` AS hogar_id,
+DATE(s.hora_inicio) AS use_date,
+SUM(TIMESTAMPDIFF(MINUTE, s.hora_inicio, s.hora_final)) AS total_minutos_watched
+FROM Hogares h, Dispositivos d, Sesiones s
+WHERE h.`ID del hogar` = d.`ID del hogar`
+AND d.id_del_dispositivo = s.id_del_dispositivo
+GROUP BY h.`ID del hogar`, DATE(s.hora_inicio);
+
+-- Uso de la vista
+SELECT * FROM daily_usage_per_household;
+
+7. Identifique qué hogares tienen más de un dispositivo del mismo tipo (por ejemplo, dos televisores). Devuelve hogar_id, dispositivo_tipo y el conteo.
+
+SELECT `ID del hogar` AS hogar_id, tipo_de_dispositivo AS dispositivo_tipo, COUNT(*) AS cantidad
+FROM Dispositivos
+GROUP BY `ID del hogar`, tipo_de_dispositivo
+HAVING COUNT(*) > 1
+ORDER BY `ID del hogar`, cantidad DESC;
+
+8. Escribe una consulta que detecte sesiones con duración anormal (mayor a 6 horas) y devuelva: hogar, dispositivo_tipo, aplicación, duración.
+
+SELECT h.`ID del hogar` AS hogar, d.tipo_de_dispositivo AS dispositivo_tipo, s.nombre_de_la_aplicación AS aplicación, 
+TIMESTAMPDIFF(HOUR, s.hora_inicio, s.hora_final) AS duración_horas
+FROM Hogares h, Dispositivos d, Sesiones s
+WHERE h.`ID del hogar` = d.`ID del hogar`
+AND d.id_del_dispositivo = s.id_del_dispositivo
+AND TIMESTAMPDIFF(HOUR, s.hora_inicio, s.hora_final) > 6
+ORDER BY duración_horas DESC;
