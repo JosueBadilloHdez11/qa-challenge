@@ -1,0 +1,5 @@
+RESPUESTA
+
+¿Cómo identificarías posibles errores o inconsistencias en los títulos que puedan estar provocando registros duplicados? Por ejemplo: "El señor de los anillos", "El señor de los anillos", "El señor de los anillos", "El señor de los anillos".
+
+En este caso en la forma de como esta escrito, debido a que al estar escrito diferente ya sea con una mayúscula, minúscula, algún espacio o acento se puede registrar dentro de la base de datos.
